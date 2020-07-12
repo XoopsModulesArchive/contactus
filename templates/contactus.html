@@ -1,0 +1,164 @@
+<style type="text/css">
+    .requierfield {
+        background: transparent url(images/bg_form_required.png) no-repeat scroll left top;
+        padding: 6px 0 0 60px;
+        font-weight: bold;
+    }
+    
+    #messagefield td {
+        padding: 6px 0;
+    }
+    
+    #messagefield {
+        width: 50%;
+        margin-left: -12px;
+    }
+</style>
+
+<{if $INFOENABLE}>
+    <{$INFOTITLE}>
+    <{$INFOCONTENT}>
+    <br/>
+<{/if}>
+
+<{if $MAPENABLE}>
+    <{$GMTITLE}>
+    <div id="map_canvas" style="width: <{$GMWIDTH}>px; height: <{$GMHEIGHT}>px"></div>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=<{$KEY}>&amp;sensor=false&amp;hl=<{$MAPLANG}>"
+            type="text/javascript"></script>
+    <script type='text/javascript'>
+        var address = "<{$GMAPADDR}>";
+        
+
+        function GetIPLocation() {
+            if (GBrowserIsCompatible()) {
+                map = new GMap2(document.getElementById("map_canvas"));
+                geocoder = new GClientGeocoder();
+                geocoder.getLatLng(address, ShowAddress);
+            }
+        }
+
+        function ShowAddress(coordinate) {
+            if (!coordinate) {
+                alert("Address "+address+" can not be resolved.");
+            } else {
+                map.setCenter(coordinate, 17);
+                var marker = new GMarker(coordinate);
+                map.addOverlay(marker);
+                GEvent.addListener(marker, "click", function() {
+                    map.openInfoWindowHtml(coordinate, "<b>Address</b>: "+address);
+                });
+                
+                map.addControl(new GSmallZoomControl3D());
+                //map.addControl(new GOverviewMapControl());
+            }
+        }
+        
+    </script>
+    <br/>
+<{/if}>
+
+<{if $EMAILENABLE}>
+<{$EMAILTITLE}>
+<form id="contactinfo" name='contactinfo' action='contact.php' method='post' onsubmit="return VerifyInputValue();">
+<table id="messagefield" width="50%">
+    <tr>
+        <td>
+            <div class="requierfield"><{$smarty.const._CONTACTUS_NAME}></div>
+        </td>
+        <td>
+            <input id="author" type="text" tabindex="1" size="40" value="<{$author}>" name="author"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="requierfield"><{$smarty.const._CONTACTUS_EMAIL}></div>
+        </td>
+        <td>
+            <input id="email" type="text" tabindex="2" size="40" value="<{$email}>" name="email"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="requierfield"><{$smarty.const._CONTACTUS_SUBJ}></div>
+        </td>
+        <td>
+            <input type="text" tabindex="3" size="40" value="<{$com_title}>" id="com_title" name="com_title"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="requierfield"><{$smarty.const._CONTACTUS_BODY}></div>
+        </td>
+        <td>
+            <textarea tabindex="4" rows="10" cols="40" id="com_text" name="com_text"><{$com_text}></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="requierfield"><{$smarty.const._CONTACTUS_CAPTCHA}></div>
+        </td>
+        <td>
+            <input type="text" tabindex="5" size="40" id="captchano" name="captchano"/><br/>
+            <img src="./showcaptcha.php">
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>
+            <input type="submit" name="login" value="<{$smarty.const._CONTACTUS_SEND}>" class="xo-formbuttons"/>
+            <input type="hidden" name="xoops_redirect" value="<{$xoops_requesturi}>" />
+        </td>
+    </tr>
+</table>
+</form>
+
+<script type='text/javascript' src="./js/function_valid.js"></script>
+<script type='text/javascript'>   
+    var errormsg = "<{$errormsg}>";
+
+    function setfocus() {
+        //check error message
+        if(!IsEmptyValue(errormsg)) {
+            alert(errormsg);
+        }
+        document.contactinfo.author.focus(); 
+    }
+    
+    function VerifyInputValue() {
+        var author = document.getElementById('author').value;
+        var email = document.getElementById('email').value;
+        var com_title = document.getElementById('com_title').value;
+        var com_text = document.getElementById('com_text').value;
+        var captcha = document.getElementById('captchano').value;
+
+        if(IsEmptyValue(author) ||
+        		IsEmptyValue(email) ||
+        		IsEmptyValue(com_title) ||
+        		IsEmptyValue(com_text) ||
+                IsEmptyValue(captcha)
+                ) {
+            alert("<{$smarty.const._ERROR_REQUIERFIELDEMPTY}>");
+            return false;
+        } else if(!IsValidEmail(email)) {
+            alert("<{$smarty.const._ERROR_EMAIL_INVALID}>");
+            return false;
+        }
+
+        return true;
+    }
+</script>
+<{/if}>
+
+
+<script type='text/javascript'>
+    window.onload = init;
+    function init() {
+        <{if $EMAILENABLE}>
+            setfocus();
+        <{/if}>
+        <{if $MAPENABLE}>
+            GetIPLocation();
+        <{/if}>
+    }
+</script>
